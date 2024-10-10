@@ -1,54 +1,134 @@
-import AcmeLogo from "@/app/ui/acme-logo";
-import { ArrowRightIcon } from "@heroicons/react/24/outline";
-import Link from "next/link";
-import styles from "@/app/ui/home.module.css";
-import { lusitana } from "@/app/ui/fonts";
-import Image from "next/image";
+"use client";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import CircleLogo from "@/app/ui/circle-logo";
+import LoginModal from "@/app/ui/auth/LoginModal";
+import SignupModal from "@/app/ui/auth/SignupModal";
 
 export default function Page() {
-  return (
-    <main className="flex min-h-screen flex-col p-6">
-      <div className={styles.shape} />
+  const [showLogin, setShowLogin] = useState(false);
+  const [showSignup, setShowSignup] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const router = useRouter();
 
-      <div className="flex h-20 shrink-0 items-end rounded-lg bg-blue-500 p-4 md:h-52">
-        <AcmeLogo />
-      </div>
-      <div className="mt-4 flex grow flex-col gap-4 md:flex-row">
-        <div className="flex flex-col justify-center gap-6 rounded-lg bg-gray-50 px-6 py-10 md:w-2/5 md:px-20">
-          <div className="relative w-0 h-0 border-l-[15px] border-r-[15px] border-b-[26px] border-l-transparent border-r-transparent border-b-black" />
-          <p
-            className={`${lusitana.className} text-xl text-gray-800 md:text-3xl md:leading-normal`}
-          >
-            <strong>Welcome to Acme.</strong> This is the example for the{" "}
-            <a href="https://nextjs.org/learn/" className="text-blue-500">
-              Next.js Learn Course
-            </a>
-            , brought to you by Vercel.
-          </p>
-          <Link
-            href="/login"
-            className="flex items-center gap-5 self-start rounded-lg bg-blue-500 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-400 md:text-base"
-          >
-            <span>Log in</span> <ArrowRightIcon className="w-5 md:w-6" />
-          </Link>
+  useEffect(() => {
+    const checkAuthStatus = () => {
+      const token = localStorage.getItem("token");
+      setIsLoggedIn(!!token);
+    };
+    checkAuthStatus();
+    window.addEventListener("storage", checkAuthStatus);
+    return () => window.removeEventListener("storage", checkAuthStatus);
+  }, []);
+
+  const handleLoginSuccess = (
+    userId: string,
+    siteId: string,
+    token?: string
+  ) => {
+    localStorage.setItem("userId", userId);
+    localStorage.setItem("siteId", siteId);
+    token && localStorage.setItem("token", token);
+    setIsLoggedIn(true);
+    setShowLogin(false);
+    router.push("/dashboard");
+  };
+
+  const handleSignupSuccess = () => {
+    setShowSignup(false);
+    setShowLogin(true);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("siteId");
+    setIsLoggedIn(false);
+  };
+
+  const handleSwitchToSignup = () => {
+    setShowLogin(false);
+    setShowSignup(true);
+  };
+
+  const handleSwitchToLogin = () => {
+    setShowSignup(false);
+    setShowLogin(true);
+  };
+
+  return (
+    <main className="flex min-h-screen flex-col">
+      <header className="flex justify-end p-4">
+        {isLoggedIn ? (
+          <>
+            <button
+              onClick={() => router.push("/dashboard")}
+              className="mr-4 px-4 py-2 text-blue-500 hover:underline"
+            >
+              Dashboard
+            </button>
+            <button
+              onClick={handleLogout}
+              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+            >
+              Logout
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              onClick={() => setShowLogin(true)}
+              className="mr-4 rounded bg-white px-4 py-2 text-blue-500 hover:bg-blue-100"
+            >
+              Login
+            </button>
+            <button
+              onClick={() => setShowSignup(true)}
+              className="rounded bg-blue-700 px-4 py-2 text-white hover:bg-blue-600"
+            >
+              Sign Up
+            </button>
+          </>
+        )}
+      </header>
+
+      <div className="flex grow flex-col items-center justify-center bg-blue-500 p-6 text-white">
+        <div className="mb-8 h-32 w-32">
+          <CircleLogo />
         </div>
-        <div className="flex items-center justify-center p-6 md:w-3/5 md:px-28 md:py-12">
-          <Image
-            src="/hero-desktop.png"
-            width={1000}
-            height={760}
-            className="hidden md:block"
-            alt="Screenshots of the dashboard project showing desktop version"
-          />
-          <Image
-            src="/hero-mobile.png"
-            width={560}
-            height={620}
-            className="block md:hidden"
-            alt="Screenshots of the dashboard project showing mobile version"
-          />
-        </div>
+        <h1 className="mb-4 text-4xl font-bold">Welcome to Circle</h1>
+        <p className="text-xl">Your platform for seamless connections</p>
+        {isLoggedIn && (
+          <button
+            onClick={() => router.push("/dashboard")}
+            className="mt-8 px-6 py-3 bg-white text-blue-500 rounded-full text-lg font-semibold hover:bg-blue-100 transition-colors"
+          >
+            Go to Dashboard
+          </button>
+        )}
       </div>
+
+      <footer className="bg-blue-600 p-4 text-center text-white">
+        © 2024 Circle. All rights reserved.
+      </footer>
+
+      {showLogin && !isLoggedIn && (
+        <LoginModal
+          onClose={() => setShowLogin(false)}
+          onLoginSuccess={handleLoginSuccess}
+          onSignupClick={handleSwitchToSignup}
+          onForgotPasswordClick={() => {
+            /* Implement forgot password functionality */
+          }}
+        />
+      )}
+      {showSignup && !isLoggedIn && (
+        <SignupModal
+          onClose={() => setShowSignup(false)}
+          onSignupSuccess={handleSignupSuccess}
+          onSwitchToLogin={handleSwitchToLogin}
+        />
+      )}
     </main>
   );
 }

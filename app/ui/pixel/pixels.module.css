@@ -1,0 +1,51 @@
+.pixelContainer {
+  padding: 20px;
+}
+
+.pixelForm {
+  display: flex;
+  margin-bottom: 20px;
+}
+
+.siteIdInput {
+  flex-grow: 1;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.generateButton {
+  margin-left: 10px;
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.pixelCodeSection {
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 4px;
+}
+
+.pixelCodeDisplay {
+  background-color: #e9ecef;
+  padding: 15px;
+  border-radius: 4px;
+  overflow-x: auto;
+}
+
+.copyButton {
+  margin-top: 10px;
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}

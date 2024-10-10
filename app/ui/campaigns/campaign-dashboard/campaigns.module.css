@@ -1,0 +1,80 @@
+.campaignsDashboard {
+  padding: 20px;
+}
+
+.heading {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.filters {
+  margin-bottom: 20px;
+}
+
+.select {
+  margin-left: 10px;
+}
+
+.filterButton,
+.newCampaignButton {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.newCampaignButton {
+  margin-bottom: 20px;
+}
+
+.campaignsTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.campaignsTable th,
+.campaignsTable td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.campaignsTable th {
+  background-color: #f2f2f2;
+}
+
+.status {
+  font-weight: bold;
+}
+
+.status.paused {
+  color: red;
+}
+
+.status.pending {
+  color: orange;
+}
+
+.status.active {
+  color: green;
+}
+
+.actionButton {
+  margin-right: 5px;
+  cursor: pointer;
+}
+
+.actionButton.play {
+  color: green;
+}
+
+.actionButton.edit {
+  color: blue;
+}
+
+.actionButton.copy {
+  color: gray;
+}
