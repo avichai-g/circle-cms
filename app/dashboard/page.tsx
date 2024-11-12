@@ -6,18 +6,21 @@ import { lusitana } from "@/app/ui/fonts";
 type UserAction = {
   actionType: string;
   data: {
-    campaignType: string;
+    campaignType?: string;
     siteId: string;
     trackingId: string;
     url: string;
   };
   timestamp: string;
+  origin?: string;
+  _id?: string;
 };
 
-type CampaignData = {
+type DashboardData = {
   afterSaleBanner: UserAction[];
   abandonedBanner: UserAction[];
   sideBanner: UserAction[];
+  purchases: UserAction[];
 };
 
 async function fetchUserActions(siteId: string): Promise<UserAction[]> {
@@ -37,10 +40,11 @@ async function fetchUserActions(siteId: string): Promise<UserAction[]> {
 
 export default function Page() {
   const [siteId, setSiteId] = useState<string>("");
-  const [campaignData, setCampaignData] = useState<CampaignData>({
+  const [dashboardData, setDashboardData] = useState<DashboardData>({
     afterSaleBanner: [],
     abandonedBanner: [],
     sideBanner: [],
+    purchases: [],
   });
   const [error, setError] = useState("");
 
@@ -63,14 +67,17 @@ export default function Page() {
       try {
         const data = await fetchUserActions(siteId);
 
-        const processedData: CampaignData = {
+        const processedData: DashboardData = {
           afterSaleBanner: [],
           abandonedBanner: [],
           sideBanner: [],
+          purchases: [],
         };
 
         data.forEach((action) => {
-          if (
+          if (action.actionType === "purchase") {
+            processedData.purchases.push(action);
+          } else if (
             action.actionType === "banner_click" &&
             action.data &&
             action.data.campaignType
@@ -83,12 +90,12 @@ export default function Page() {
             }
 
             if (campaignType in processedData) {
-              processedData[campaignType as keyof CampaignData].push(action);
+              processedData[campaignType as keyof DashboardData].push(action);
             }
           }
         });
 
-        setCampaignData(processedData);
+        setDashboardData(processedData);
         setError("");
       } catch (error) {
         console.error("Error fetching user actions:", error);
@@ -99,7 +106,7 @@ export default function Page() {
     loadUserActions();
   }, [siteId]);
 
-  const CampaignTable = ({ actions }: { actions: UserAction[] }) => (
+  const ActionTable = ({ actions }: { actions: UserAction[] }) => (
     <table className="min-w-full divide-y divide-gray-200">
       <thead className="bg-gray-50">
         <tr>
@@ -112,12 +119,17 @@ export default function Page() {
           <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
             Timestamp
           </th>
+          {actions[0]?.origin && (
+            <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+              Origin
+            </th>
+          )}
         </tr>
       </thead>
       <tbody className="bg-white divide-y divide-gray-200">
         {actions.map((action, index) => (
           <tr
-            key={index}
+            key={action._id || index}
             className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
           >
             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -136,6 +148,11 @@ export default function Page() {
             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
               {new Date(action.timestamp).toLocaleString()}
             </td>
+            {action.origin && (
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {action.origin}
+              </td>
+            )}
           </tr>
         ))}
       </tbody>
@@ -144,33 +161,45 @@ export default function Page() {
 
   return (
     <main className="p-4 md:p-10 mx-auto max-w-7xl">
-      <h1 className={`${lusitana.className} mb-4 text-xl md:text-2xl`}>
-        User actions - Banner click
-      </h1>
+      <div className="flex justify-between items-center mb-4">
+        <h1 className={`${lusitana.className} text-xl md:text-2xl`}>
+          User Actions Dashboard
+        </h1>
+      </div>
 
       {error && <p className="text-red-500 mb-4">{error}</p>}
 
       <div className="grid gap-6 sm:grid-cols-1 lg:grid-cols-1">
         <Card
-          title="After Sale Banner"
-          value={campaignData.afterSaleBanner.length.toString()}
+          title="Purchases"
+          value={dashboardData.purchases.length.toString()}
           type="collected"
         >
-          <CampaignTable actions={campaignData.afterSaleBanner} />
+          <ActionTable actions={dashboardData.purchases} />
         </Card>
+
         <Card
-          title="Abandoned Banner"
-          value={campaignData.abandonedBanner.length.toString()}
+          title="After Sale Banner Clicks"
+          value={dashboardData.afterSaleBanner.length.toString()}
+          type="collected"
+        >
+          <ActionTable actions={dashboardData.afterSaleBanner} />
+        </Card>
+
+        <Card
+          title="Abandoned Banner Clicks"
+          value={dashboardData.abandonedBanner.length.toString()}
           type="pending"
         >
-          <CampaignTable actions={campaignData.abandonedBanner} />
+          <ActionTable actions={dashboardData.abandonedBanner} />
         </Card>
+
         <Card
-          title="Side Banner"
-          value={campaignData.sideBanner.length.toString()}
+          title="Side Banner Clicks"
+          value={dashboardData.sideBanner.length.toString()}
           type="invoices"
         >
-          <CampaignTable actions={campaignData.sideBanner} />
+          <ActionTable actions={dashboardData.sideBanner} />
         </Card>
       </div>
     </main>
